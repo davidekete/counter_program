@@ -163,7 +163,7 @@ pub fn process_set_value(
 
     counter_data.counter = value;
 
-    counter_data.serialize(&mut &mut counter_account.data.borrow_mut()[..])?;
+    counter_data.serialize(&mut &mut data[..])?;
 
     Ok(())
 }
