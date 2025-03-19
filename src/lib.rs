@@ -5,8 +5,6 @@ use solana_program::{
     account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey,
 };
 
-// solana_program::declare_id!("Counter111111111111111111111111111111111");
-
 #[derive(BorshDeserialize, BorshSerialize, Debug)]
 pub struct CounterAccount {
     pub counter: u64,
@@ -62,21 +60,7 @@ mod test {
 
         let counter_account = Keypair::new();
 
-        // let rent = banks_client.get_rent().await.unwrap();
-        // let account_space = std::mem::size_of::<CounterAccount>();
-        // let required_lamports = rent.minimum_balance(account_space);
-
-        // let create_counter_account_ix = system_instruction::create_account(
-        //     &payer.pubkey(),
-        //     &counter_account.pubkey(),
-        //     required_lamports,
-        //     account_space as u64,
-        //     &program_id,
-        // );
-
         let init_value: u64 = 123;
-
-        println!("Testing counter initialization...");
 
         let mut init_data = vec![0];
         init_data.extend_from_slice(&init_value.to_le_bytes());

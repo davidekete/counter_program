@@ -31,10 +31,11 @@ pub fn process_initialize(
 
     let system_program = next_account_info(accounts_iter)?;
 
-    let account_space = 8;
+    let account_space = std::mem::size_of::<CounterAccount>();
     let rent = Rent::get()?;
 
     let required_lamports = rent.minimum_balance(account_space);
+    msg!("Allocating {} bytes, required lamports = {}", account_space, required_lamports);
 
     invoke(
         &system_instruction::create_account(
@@ -166,4 +167,30 @@ pub fn process_set_value(
     counter_data.serialize(&mut &mut data[..])?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod size_test {
+    // use super::*;
+    use borsh::{BorshDeserialize, BorshSerialize};
+
+    #[derive(BorshSerialize, BorshDeserialize, Debug)]
+    pub struct CounterAccount {
+        pub counter: u64,
+        pub update_count: u64,
+        pub owner: [u8; 32],
+    }
+
+    #[test]
+    fn check_borsh_size() {
+      let c = CounterAccount {
+          counter: 123,
+          update_count: 999,
+          owner: [0u8; 32],
+      };
+  
+      let mut data = Vec::new();
+      c.serialize(&mut data).expect("Failed to serialize");
+      println!("Borsh serialized length: {}", data.len());
+  }
 }
