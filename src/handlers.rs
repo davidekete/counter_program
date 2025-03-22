@@ -1,4 +1,3 @@
-use crate::CounterAccount;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{AccountInfo, next_account_info},
@@ -11,6 +10,7 @@ use solana_program::{
     system_instruction,
     sysvar::Sysvar,
 };
+use crate::state::CounterAccount;
 
 pub fn process_initialize(
     program_id: &Pubkey,
@@ -169,28 +169,28 @@ pub fn process_set_value(
     Ok(())
 }
 
-#[cfg(test)]
-mod size_test {
-    // use super::*;
-    use borsh::{BorshDeserialize, BorshSerialize};
+// #[cfg(test)]
+// mod size_test {
+//     // use super::*;
+//     use borsh::{BorshDeserialize, BorshSerialize};
 
-    #[derive(BorshSerialize, BorshDeserialize, Debug)]
-    pub struct CounterAccount {
-        pub counter: u64,
-        pub update_count: u64,
-        pub owner: [u8; 32],
-    }
+//     #[derive(BorshSerialize, BorshDeserialize, Debug)]
+//     pub struct CounterAccount {
+//         pub counter: u64,
+//         pub update_count: u64,
+//         pub owner: [u8; 32],  
+//     }
 
-    #[test]
-    fn check_borsh_size() {
-      let c = CounterAccount {
-          counter: 123,
-          update_count: 999,
-          owner: [0u8; 32],
-      };
+//     #[test]
+//     fn check_borsh_size() {
+//       let c = CounterAccount {
+//           counter: 123,
+//           update_count: 999,
+//           owner: [0u8; 32],
+//       };
   
-      let mut data = Vec::new();
-      c.serialize(&mut data).expect("Failed to serialize");
-      println!("Borsh serialized length: {}", data.len());
-  }
-}
+//       let mut data = Vec::new();
+//       c.serialize(&mut data).expect("Failed to serialize");
+//       println!("Borsh serialized length: {}", data.len());
+//   }
+// }

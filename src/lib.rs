@@ -1,16 +1,9 @@
 mod handlers;
 pub mod instructions;
-use borsh::{BorshDeserialize, BorshSerialize};
+pub mod state;
 use solana_program::{
     account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey,
 };
-
-#[derive(BorshDeserialize, BorshSerialize, Debug)]
-pub struct CounterAccount {
-    pub counter: u64,
-    pub update_count: u64,
-    pub owner: [u8; 32],
-}
 
 entrypoint!(process_instruction);
 
@@ -39,7 +32,10 @@ pub fn process_instruction(
 
 #[cfg(test)]
 mod test {
+    use crate::state::CounterAccount;
+
     use super::*;
+    use borsh::BorshDeserialize;
     use solana_program_test::*;
     use solana_sdk::{
         account::ReadableAccount,
@@ -53,8 +49,11 @@ mod test {
     async fn test_initialize_counter() {
         let program_id = Pubkey::new_unique();
 
-        let mut program_test =
-            ProgramTest::new("counter", program_id, processor!(process_instruction));
+        let mut program_test = ProgramTest::new(
+            "counter_program",
+            program_id,
+            processor!(process_instruction),
+        );
 
         let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
 

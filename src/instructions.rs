@@ -1,12 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program_error::ProgramError;
 
-#[derive(BorshDeserialize, BorshSerialize, Debug)]
-pub struct CounterAccount {
-    pub counter: u64,
-    pub update_count: u64,
-}
-
 pub enum CounterInstruction {
     Initialize(u64),
     Increment,
@@ -32,6 +26,7 @@ impl CounterInstruction {
                     rest.try_into()
                         .map_err(|_| ProgramError::InvalidInstructionData)?,
                 );
+                println!("This is the initial value: {}", initial_value);
                 Ok(Self::Initialize(initial_value))
             }
             1 => Ok(Self::Increment),
