@@ -82,7 +82,7 @@ mod test {
 
         transaction.sign(&vec![&payer, &counter_account], recent_blockhash);
 
-        banks_client.send_transaction(transaction).await.unwrap();
+        banks_client.process_transaction(transaction).await.unwrap();
 
         let counter_acc_data = banks_client
             .get_account(counter_account.pubkey())
