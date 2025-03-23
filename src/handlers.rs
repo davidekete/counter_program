@@ -170,6 +170,11 @@ pub fn process_set_value(
 
     counter_data.counter = value;
 
+    counter_data.update_count = counter_data
+        .update_count
+        .checked_add(1)
+        .ok_or(ProgramError::InvalidAccountData)?;
+
     counter_data.serialize(&mut &mut data[..])?;
 
     Ok(())

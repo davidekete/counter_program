@@ -306,9 +306,9 @@ mod test {
             initial_update_value,
         ) = initialize_counter().await;
 
-        let value = 50u64;
+        let value: u64 = 50;
         let mut in_data = vec![3u8];
-        in_data.extend_from_slice(&value.to_be_bytes());
+        in_data.extend_from_slice(&value.to_le_bytes());
 
         let set_instructions = Instruction {
             program_id,
