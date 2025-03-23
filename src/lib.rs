@@ -174,8 +174,8 @@ mod test {
             payer_account,
             mut banks_client,
             recent_blockhash,
-            initial_counter_value,
-            initial_update_value,
+            mut initial_counter_value,
+            mut initial_update_value,
         ) = initialize_counter().await;
 
         let increment_data = vec![1u8];
@@ -209,11 +209,11 @@ mod test {
         let counter_state = CounterAccount::try_from_slice(&counter_account_data.data())
             .expect("failed to deserialize");
 
-        let res = counter_state.counter == (initial_counter_value + 1);
+        let mut res = counter_state.counter == (initial_counter_value + 1);
 
         assert!(res);
 
-        let update_res = counter_state.update_count == (initial_update_value + 1);
+        let mut update_res = counter_state.update_count == (initial_update_value + 1);
 
         assert!(update_res);
 
@@ -222,5 +222,70 @@ mod test {
             Current Update count: {}",
             counter_state.counter, counter_state.update_count
         );
+
+        //Decrement
+        initial_counter_value = counter_state.counter;
+        initial_update_value = counter_state.update_count;
+
+        let decrement_instruction = Instruction {
+            program_id,
+            accounts: vec![solana_sdk::instruction::AccountMeta::new(
+                counter_account.pubkey(),
+                false,
+            )],
+            data: decrement_data,
+        };
+
+        let mut decrement_transaction =
+            Transaction::new_with_payer(&[decrement_instruction], Some(&payer_account.pubkey()));
+
+        decrement_transaction.sign(&vec![&payer_account], recent_blockhash);
+
+        banks_client
+            .process_transaction(decrement_transaction)
+            .await
+            .unwrap();
+
+        let counter_account_data = banks_client
+            .get_account(counter_account.pubkey())
+            .await
+            .expect("Failed to fetch account")
+            .expect("Account does not exist");
+
+        let counter_state = CounterAccount::try_from_slice(&counter_account_data.data())
+            .expect("failed to deserialize");
+
+        res = counter_state.counter == (initial_counter_value - 1);
+        update_res = counter_state.update_count == (initial_update_value + 1);
+
+        assert!(res);
+        assert!(update_res);
+
+        println!(
+            "Success! Counter was decremented to {}
+            Current Update count: {}",
+            counter_state.counter, counter_state.update_count
+        );
+    }
+
+    #[tokio::test]
+    async fn test_set_counter_value() {
+        //data from initialization
+        let (
+            program_id,
+            counter_account,
+            payer_account,
+            mut banks_client,
+            recent_blockhash,
+            mut initial_counter_value,
+            mut initial_update_value,
+        ) = initialize_counter().await;
+
+        let in_data = vec![3u8];
+
+        let set_instructions = Instruction {
+            program_id,
+            accounts:
+        }
     }
 }
