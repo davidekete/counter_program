@@ -1,3 +1,4 @@
+use crate::state::CounterAccount;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{AccountInfo, next_account_info},
@@ -10,7 +11,6 @@ use solana_program::{
     system_instruction,
     sysvar::Sysvar,
 };
-use crate::state::CounterAccount;
 
 pub fn process_initialize(
     program_id: &Pubkey,
@@ -20,14 +20,14 @@ pub fn process_initialize(
     let accounts_iter = &mut accounts.iter();
 
     let counter_account = next_account_info(accounts_iter)?;
-    if counter_account.owner != program_id && !counter_account.data_is_empty() {
-        return Err(ProgramError::AccountAlreadyInitialized);
-    }
+    // if counter_account.owner != program_id && !counter_account.data_is_empty() {
+    //     return Err(ProgramError::AccountAlreadyInitialized);
+    // }
 
     let payer_account = next_account_info(accounts_iter)?;
-    if !payer_account.is_signer {
-        return Err(ProgramError::MissingRequiredSignature);
-    }
+    // if !payer_account.is_signer {
+    //     return Err(ProgramError::MissingRequiredSignature);
+    // }
 
     let system_program = next_account_info(accounts_iter)?;
 
@@ -35,7 +35,11 @@ pub fn process_initialize(
     let rent = Rent::get()?;
 
     let required_lamports = rent.minimum_balance(account_space);
-    msg!("Allocating {} bytes, required lamports = {}", account_space, required_lamports);
+    msg!(
+        "Allocating {} bytes, required lamports = {}",
+        account_space,
+        required_lamports
+    );
 
     invoke(
         &system_instruction::create_account(
@@ -162,10 +166,11 @@ pub fn process_set_value(
         return Err(ProgramError::IllegalOwner);
     }
 
+    println!("This is the value {}", value);
+
     counter_data.counter = value;
 
     counter_data.serialize(&mut &mut data[..])?;
 
     Ok(())
 }
-

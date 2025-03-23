@@ -58,6 +58,7 @@ mod test {
         let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
 
         let counter_account = Keypair::new();
+        // let authorized_account = Keypair::new();
 
         let init_value: u64 = 123;
 
@@ -93,7 +94,11 @@ mod test {
         let counter_state = CounterAccount::try_from_slice(&counter_acc_data.data())
             .expect("failed to deserialize");
 
-        assert_eq!(counter_state.counter, 123);
+        assert_eq!(
+            counter_state.counter, 123,
+            "Counter state mismatch: expected 123, got {}",
+            counter_state.counter
+        );
         println!(
             "Success! Counter was initialized to {}",
             counter_state.counter
@@ -211,11 +216,21 @@ mod test {
 
         let mut res = counter_state.counter == (initial_counter_value + 1);
 
-        assert!(res);
+        assert!(
+            res,
+            "Account not incremented, expected {}, found {}",
+            (initial_counter_value + 1),
+            counter_state.counter
+        );
 
         let mut update_res = counter_state.update_count == (initial_update_value + 1);
 
-        assert!(update_res);
+        assert!(
+            update_res,
+            "Update Counter not updated, expected {}, found {}",
+            (initial_counter_value + 1),
+            counter_state.update_count
+        );
 
         println!(
             "Success! Counter was incremented to {}
@@ -258,8 +273,18 @@ mod test {
         res = counter_state.counter == (initial_counter_value - 1);
         update_res = counter_state.update_count == (initial_update_value + 1);
 
-        assert!(res);
-        assert!(update_res);
+        assert!(
+            res,
+            "Account not decremented, expected {}, found {}",
+            (initial_counter_value - 1),
+            counter_state.counter
+        );
+        assert!(
+            update_res,
+            "Update Counter not updated, expected {}, found {}",
+            (initial_counter_value + 1),
+            counter_state.update_count
+        );
 
         println!(
             "Success! Counter was decremented to {}
@@ -277,15 +302,53 @@ mod test {
             payer_account,
             mut banks_client,
             recent_blockhash,
-            mut initial_counter_value,
-            mut initial_update_value,
+            initial_counter_value,
+            initial_update_value,
         ) = initialize_counter().await;
 
-        let in_data = vec![3u8];
+        let value = 50u64;
+        let mut in_data = vec![3u8];
+        in_data.extend_from_slice(&value.to_be_bytes());
 
         let set_instructions = Instruction {
             program_id,
-            accounts:
-        }
+            accounts: vec![
+                solana_sdk::instruction::AccountMeta::new(payer_account.pubkey(), true),
+                solana_sdk::instruction::AccountMeta::new(counter_account.pubkey(), true),
+            ],
+            data: in_data,
+        };
+
+        let mut set_transaction =
+            Transaction::new_with_payer(&[set_instructions], Some(&payer_account.pubkey()));
+        set_transaction.sign(&vec![&payer_account, &counter_account], recent_blockhash);
+
+        banks_client
+            .process_transaction(set_transaction)
+            .await
+            .unwrap();
+
+        let counter_account_data = banks_client
+            .get_account(counter_account.pubkey())
+            .await
+            .expect("Failed to fetch account")
+            .expect("Account does not exist");
+
+        let counter_state = CounterAccount::try_from_slice(&counter_account_data.data())
+            .expect("failed to deserialize");
+
+        let res = counter_state.counter == value;
+
+        assert!(
+            res,
+            "Counter not updated, expected {}, found {}",
+            value, counter_state.counter
+        );
+
+        println!(
+            "Success! Counter was set to {}
+            Current Update count: {}",
+            counter_state.counter, counter_state.update_count
+        );
     }
 }
