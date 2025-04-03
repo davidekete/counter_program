@@ -1,0 +1,12 @@
+[package]
+name = "tests"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[dependencies]
+anchor-client = "0.30.1"
+counter-prog = { version = "0.1.0", path = "../programs/counter-prog" }
+solana-program-test = "1.14.17"
+solana-sdk = "1.14.17"
+tokio = "1.44.1"
