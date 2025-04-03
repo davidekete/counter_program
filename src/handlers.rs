@@ -20,14 +20,14 @@ pub fn process_initialize(
     let accounts_iter = &mut accounts.iter();
 
     let counter_account = next_account_info(accounts_iter)?;
-    // if counter_account.owner != program_id && !counter_account.data_is_empty() {
-    //     return Err(ProgramError::AccountAlreadyInitialized);
-    // }
+    if counter_account.owner != program_id && !counter_account.data_is_empty() {
+        return Err(ProgramError::AccountAlreadyInitialized);
+    }
 
     let payer_account = next_account_info(accounts_iter)?;
-    // if !payer_account.is_signer {
-    //     return Err(ProgramError::MissingRequiredSignature);
-    // }
+    if !payer_account.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
 
     let system_program = next_account_info(accounts_iter)?;
 
